@@ -1,0 +1,161 @@
+package com.ax.stock.service.impl;
+
+import com.alibaba.excel.EasyExcel;
+import com.ax.stock.exception.DailyIndexException;
+import com.ax.stock.mapper.StockBlockRtInfoMapper;
+import com.ax.stock.mapper.StockMarketIndexInfoMapper;
+import com.ax.stock.mapper.StockRtInfoMapper;
+import com.ax.stock.pojo.domain.InnerMarketDomain;
+import com.ax.stock.pojo.domain.StockBlockDomain;
+import com.ax.stock.pojo.domain.StockUpdownDomain;
+import com.ax.stock.pojo.vo.StockInfoConfig;
+import com.ax.stock.pojo.vo.resp.ResponseCode;
+import com.ax.stock.service.StockService;
+import com.ax.stock.pojo.vo.resp.R;
+import com.ax.stock.util.DateTimeUtil;
+import com.ax.stock.vo.resp.PageResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class StockServiceImpl implements StockService {
+
+
+    @Autowired
+    private StockInfoConfig stockInfoConfig;
+    @Autowired
+    private StockMarketIndexInfoMapper stockMarketIndexInfoMapper;
+    @Autowired
+    private StockBlockRtInfoMapper stockBlockRtInfoMapper;
+    @Autowired
+    private StockRtInfoMapper stockRtInfoMapper;
+    @Override
+    public R<List<InnerMarketDomain>> getInnerMarketInfo() {
+        // 1.获取股票的最新最新的交易时间点（精确到分钟，秒和毫秒设置为0）
+//        DateTime curDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+//        Date curDate = DateTimeUtil.getLastDate4Stock(DateTime.now()).toDate();
+//        Date curDate = curDateTime.toDate();
+        // 先使用mock数据，等后续工程完成后再将代码删除即可
+        Date curDate = DateTime.parse("2021-12-28 09:31:00",
+                        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+        // 2.获取大盘集合
+        List<String> innerCodes = stockInfoConfig.getInner();
+        System.out.println("innerCodes = " + innerCodes);
+        // 3.调用mapper查询数据
+        List<InnerMarketDomain> data = stockMarketIndexInfoMapper.getMarketInfo(curDate,innerCodes);
+        System.out.println("data = " + data);
+        // 4.封装并响应
+        return R.ok(data);
+    }
+
+    @Override
+    public R<List<StockBlockDomain>> getStockBlockInfo() {
+        Date mockDate = DateTime.parse("2021-12-21 14:30:00",DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+
+        List<StockBlockDomain> data = stockBlockRtInfoMapper.getPlateInfo(mockDate);
+
+        return R.ok(data);
+    }
+
+    @Override
+    public R<PageResult<StockUpdownDomain>> getStockInfoByPage(int page,int pageSize) {
+        // 1.获取股票的最新最新的交易时间点（精确到分钟，秒和毫秒设置为0）
+//        DateTime curDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+//        Date curDate = DateTimeUtil.getLastDate4Stock(DateTime.now()).toDate();
+//        Date curDate = curDateTime.toDate();
+        // 先使用mock数据，等后续工程完成后再将代码删除即可
+        Date curDate = DateTime.parse("2021-12-30 09:42:00",
+                DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+        // 设置分页参数
+        PageHelper.startPage(page,pageSize);
+        // 调用mapper进行查询
+        List<StockUpdownDomain> pageData = stockRtInfoMapper.getStockInfoByTime(curDate);
+        // 组装配置result对象
+        PageInfo<StockUpdownDomain> pageInfo = new PageInfo<>(pageData);
+        PageResult<StockUpdownDomain> pageResult = new PageResult<>(pageInfo);
+
+        return R.ok(pageResult);
+    }
+
+    @Override
+    public R<List<StockUpdownDomain>> getIncreaseInfoByPage(int page, int pageSize) {
+        // 先使用mock数据，等后续工程完成后再将代码删除即可
+        Date curDate = DateTime.parse("2021-12-30 09:42:00",
+                DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+        PageHelper.startPage(page,pageSize);
+        List<StockUpdownDomain> stockInfoByTime = stockRtInfoMapper.getStockInfoByTime(curDate);
+        PageInfo<StockUpdownDomain> pageInfo = new PageInfo<>(stockInfoByTime);
+        List<StockUpdownDomain> list = pageInfo.getList();
+        return R.ok(list);
+
+    }
+
+    @Override
+    public R<Map<String, List<Map<Integer, String>>>> getStockUpDownCount() {
+        // 获取最新股票的交易时间点（截止时间）
+        DateTime curDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        // 先使用mock数据，等后续工程完成后再将代码删除即可
+        curDateTime = DateTime.parse("2022-01-06 14:25:00",
+                DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date endDate = curDateTime.toDate();
+
+        // 获取最新交易时间点对应的开盘时间点
+        Date startDate = DateTimeUtil.getOpenDate(curDateTime).toDate();
+        // 统计涨停数据(1涨停)
+        List<Map<Integer,String>> upList = stockRtInfoMapper.getStockUpdownCount(startDate,endDate,1);
+        // 统计跌停数据(0跌停)
+        List<Map<Integer,String>> downList = stockRtInfoMapper.getStockUpdownCount(startDate,endDate,0);
+        // 组装数据
+        Map<String, List<Map<Integer, String>>> info = new HashMap<>();
+        info.put("upList",upList);
+        info.put("downList",downList);
+        // 响应数据
+        return R.ok(info);
+    }
+
+    @Override
+    public void exportStockUpDownInfo(int page, int pageSize, HttpServletResponse response) {
+        // 1、获取分页的数据
+        R<PageResult<StockUpdownDomain>> r = this.getStockInfoByPage(page, pageSize);
+        List<StockUpdownDomain> rows = r.getData().getRows();
+        // 2、将数据导出到excel中
+        // 这里注意 使用Swagger可能会出现问题，建议使用postman或者浏览器直接访问
+        // 告知浏览器传入的数据是excel格式的文件
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        try {
+            // 这里URLEncoder.encode可以防止中文乱码，和Easyexcel没有关系（还可以指定默认文件名字，这里是股票信息表）
+            String fileName = URLEncoder.encode("股票信息表","UTF-8");
+            response.setHeader("Content-disposition","attachment;filename="+fileName+".xlsx");
+            EasyExcel.write(response.getOutputStream(),StockUpdownDomain.class).sheet("股票涨幅信息").doWrite(rows);
+        } catch (Exception e) {
+            log.error("当前页码：{}，每页大小：{}，当前时间点{}，异常信息：{}",
+                        page,pageSize,DateTime.now().toString("yyyy-MM-dd HH:mm:ss"),e.getMessage());
+            // 通知前端异常 稍后重试
+            response.setContentType("application/json");
+            response.setCharacterEncoding("Utf-8");
+            R<Object> error = R.error(ResponseCode.ERROR);
+            try {
+                String json = new ObjectMapper().writeValueAsString(error);
+                response.getWriter().write(json);
+            } catch (IOException ioException) {
+                log.error("exportStockUpDownInfo 响应错误信息失败，时间{}",DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+            }
+        }
+    }
+}
