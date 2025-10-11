@@ -27,10 +27,8 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -188,5 +186,58 @@ public class StockServiceImpl implements StockService {
         info.put("amtList",tData);
         info.put("yesAmtList",preTData);
         return R.ok(info);
+    }
+
+    @Override
+    public R<Map<String, Object>> getIncreaseRangeInfo() {
+        // 获取当前最新的股票交易时间点
+        DateTime curDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        // mock data
+        curDateTime = DateTime.parse("2022-01-06 9:55:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date curDate = curDateTime.toDate();
+        // 调用mapper获取数据
+        List<Map<String,Object>> infos =stockRtInfoMapper.getIncreaseRangeInfoByDate(curDate);
+
+        // 将顺序的涨幅区间内的每个元素
+        // 方式一：普通循环
+/*        List<Map<String,Object>> allInfos = new ArrayList<>();
+        for (String title : upDownRange) {
+            Map<String,Object> tmp = null;
+            for (Map<String, Object> info : infos) {
+                if (info.containsValue(title)){
+                    tmp = info;
+                    break;
+                }
+            }
+            if (tmp == null){
+                // 不存在则补齐
+                tmp = new HashMap<>();
+                tmp.put("count",0);
+                tmp.put("title",title);
+            }
+            allInfos.add(tmp);
+        }*/
+
+        // 获取有序的涨幅区间标题集合
+        List<String> upDownRange = stockInfoConfig.getUpDownRange();
+        // 方式2：Lambda表达式
+        List<Map<String, Object>> allInfos = upDownRange.stream().map(title -> {
+            // Optional防止空指针
+            Optional<Map<String, Object>> result = infos.stream().filter(map -> map.containsValue(title)).findFirst();
+            if (result.isPresent()) {
+                return result.get();
+            } else {
+                HashMap<String, Object> tmp = new HashMap<>();
+                tmp.put("count", 0);
+                tmp.put("title", title);
+                return tmp;
+            }
+        }).collect(Collectors.toList());
+        // 组装数据
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("time",curDateTime.toString("yyyy-MM-dd HH:mm:ss"));
+        data.put("infos",allInfos);
+        // 响应
+        return R.ok(data);
     }
 }

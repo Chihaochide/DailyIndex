@@ -27,4 +27,6 @@ public interface StockService {
     R<Map<String, List>> getCompareStockTradeAmt();
 
 
+    R<Map<String, Object>> getIncreaseRangeInfo();
+
 }

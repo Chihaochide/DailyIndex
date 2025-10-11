@@ -108,4 +108,13 @@ public class StockController {
     public R<Map<String,List>> getCompareStockTradeAmt(){
         return stockService.getCompareStockTradeAmt();
     }
+
+    /**
+     * 统计最新交易时间点（A股）个股分时涨幅度
+     */
+    @GetMapping("/stock/updown")
+    public R<Map<String,Object>> getIncreaseRangeInfo(){
+        return stockService.getIncreaseRangeInfo();
+    }
+
 }
