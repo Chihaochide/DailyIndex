@@ -87,10 +87,25 @@ public class StockController {
      * @param page  当前页
      * @param pageSize 每页大小
      */
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "page", value = "当前页"),
+            @ApiImplicitParam(paramType = "query", dataType = "int", name = "pageSize", value = "每页大小")
+    })
+    @ApiOperation(value = "导出股票涨幅信息", notes = "导出股票涨幅信息", httpMethod = "GET")
     @GetMapping("/stock/export")
     public void exportStockUpDownInfo (@RequestParam(value = "page",required = false,defaultValue = "1") int page,
                                        @RequestParam(value = "pageSize",required = false,defaultValue = "20") int pageSize,
                                        HttpServletResponse response){
         stockService.exportStockUpDownInfo(page,pageSize,response);
+    }
+
+    /**
+     * 统计大盘T日和T-1日每分钟的交易量
+     * @return
+     */
+    @ApiOperation(value = "统计大盘T日和T-1日每分钟的交易量", notes = "统计大盘T日和T-1日每分钟的交易量", httpMethod = "GET")
+    @GetMapping("/stock/tradeAmt")
+    public R<Map<String,List>> getCompareStockTradeAmt(){
+        return stockService.getCompareStockTradeAmt();
     }
 }

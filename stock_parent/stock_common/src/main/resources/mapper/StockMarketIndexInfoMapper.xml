@@ -147,4 +147,20 @@
         </foreach>
         AND cur_time = #{curDate}
     </select>
+    <select id="getSumAmtInfo" resultType="map">
+        select
+            date_format(smi.cur_time,'%Y%m%d%H%i') as time,
+            sum(smi.trade_amount) as count
+        from
+            stock_market_index_info as smi
+        where
+            smi.cur_time between #{openData} and #{endDate}
+          and
+        smi.market_code in
+            <foreach collection="marketCodes" item="code" separator="," open="(" close=")">
+                #{code}
+            </foreach>
+        group by time
+        order by time asc
+    </select>
 </mapper>

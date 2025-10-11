@@ -23,4 +23,8 @@ public interface StockService {
     R<Map<String, List<Map<Integer, String>>>> getStockUpDownCount();
 
     void exportStockUpDownInfo(int page, int pageSize, HttpServletResponse response);
+
+    R<Map<String, List>> getCompareStockTradeAmt();
+
+
 }

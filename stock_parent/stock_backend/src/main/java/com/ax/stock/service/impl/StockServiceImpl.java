@@ -19,6 +19,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -157,5 +158,35 @@ public class StockServiceImpl implements StockService {
                 log.error("exportStockUpDownInfo 响应错误信息失败，时间{}",DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
             }
         }
+    }
+
+    @Override
+    public R<Map<String, List>> getCompareStockTradeAmt() {
+        // 1.获取T日  （最新的股票交易日）
+        DateTime tEndDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        // mock data
+        tEndDateTime = DateTime.parse("2022-01-03 14:40:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date tEndDate = tEndDateTime.toDate();
+        // 开盘时间
+        Date tStartDate = DateTimeUtil.getOpenDate(tEndDateTime).toDate();
+
+        // 获取T-1的时间范围
+        DateTime preTEndTime = DateTimeUtil.getPreviousTradingDay(tEndDateTime);
+        // mock data
+        preTEndTime = DateTime.parse("2022-01-02 14:40:00", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date preTEndDate = preTEndTime.toDate();
+        // 开盘时间
+        Date preTStartDate = DateTimeUtil.getOpenDate(preTEndTime).toDate();
+
+        // 调用mapper
+        // 统计T日
+        List<Map> tData = stockMarketIndexInfoMapper.getSumAmtInfo(tStartDate,tEndDate,stockInfoConfig.getInner());
+        // 统计T-1
+        List<Map> preTData = stockMarketIndexInfoMapper.getSumAmtInfo(preTStartDate,preTEndDate,stockInfoConfig.getInner());
+        // 组装数据
+        HashMap<String, List> info = new HashMap<>();
+        info.put("amtList",tData);
+        info.put("yesAmtList",preTData);
+        return R.ok(info);
     }
 }
