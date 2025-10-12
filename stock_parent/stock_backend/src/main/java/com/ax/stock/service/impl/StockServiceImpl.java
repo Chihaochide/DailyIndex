@@ -5,9 +5,7 @@ import com.ax.stock.exception.DailyIndexException;
 import com.ax.stock.mapper.StockBlockRtInfoMapper;
 import com.ax.stock.mapper.StockMarketIndexInfoMapper;
 import com.ax.stock.mapper.StockRtInfoMapper;
-import com.ax.stock.pojo.domain.InnerMarketDomain;
-import com.ax.stock.pojo.domain.StockBlockDomain;
-import com.ax.stock.pojo.domain.StockUpdownDomain;
+import com.ax.stock.pojo.domain.*;
 import com.ax.stock.pojo.vo.StockInfoConfig;
 import com.ax.stock.pojo.vo.resp.ResponseCode;
 import com.ax.stock.service.StockService;
@@ -218,7 +216,7 @@ public class StockServiceImpl implements StockService {
             allInfos.add(tmp);
         }*/
 
-        // 获取有序的涨幅区间标题集合
+      /*  // 获取有序的涨幅区间标题集合
         List<String> upDownRange = stockInfoConfig.getUpDownRange();
         // 方式2：Lambda表达式
         List<Map<String, Object>> allInfos = upDownRange.stream().map(title -> {
@@ -232,12 +230,60 @@ public class StockServiceImpl implements StockService {
                 tmp.put("title", title);
                 return tmp;
             }
+        }).collect(Collectors.toList());*/
+
+        List<String> upDownRanges = stockInfoConfig.getUpDownRange();
+        List<Map<String,Object>> allInfos = upDownRanges.stream().map(title -> {
+            Optional<Map<String, Object>> find = infos.stream().filter(map -> map.containsValue(title)).findFirst();
+            if (find.isPresent()) {
+                return find.get();
+            } else {
+                HashMap<String, Object> tmp = new HashMap<>();
+                tmp.put("title", title);
+                tmp.put("count", 0);
+                return tmp;
+            }
         }).collect(Collectors.toList());
+
+
         // 组装数据
         HashMap<String, Object> data = new HashMap<>();
         data.put("time",curDateTime.toString("yyyy-MM-dd HH:mm:ss"));
         data.put("infos",allInfos);
         // 响应
         return R.ok(data);
+    }
+
+    @Override
+    public R<List<Stock4MinuteDomain>> getStockScreenTimeSharing(String code) {
+        // 获取T日最新股票交易时间点 endTime openTime
+        DateTime endDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        // 依旧mock数据
+        endDateTime = DateTime.parse("2021-12-30 14:30:00",DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date endDate = endDateTime.toDate();
+        Date openDate = DateTimeUtil.getOpenDate(endDateTime).toDate();
+        // 查询数据
+        List<Stock4MinuteDomain> data = stockRtInfoMapper.getStock4MinuteInfo(openDate,endDate,code);
+        // 返回
+        return R.ok(data);
+    }
+
+    @Override
+    public R<List<Stock4EvrDayDomain>> getStockScreenDKLine(String code) {
+        // 获取统计日K线的时间范围
+        // 获取截止时间
+        DateTime endDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
+        // 依旧mock数据
+        endDateTime = DateTime.parse("2022-06-06 14:25:00",DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
+        Date endDate = endDateTime.toDate();
+        // 获取起始时间
+        // endDateTime.minusMonths(5)  endDateTime的时间往前推5个月
+        DateTime startDateTime = endDateTime.minusMonths(5);
+        Date startDate = startDateTime.toDate();
+        // 调用mapper
+        List<String> curTimes = stockRtInfoMapper.getLastCurTimes(startDate,endDate,code);
+        System.out.println("curTimes = " + curTimes);
+        List<Stock4EvrDayDomain> info = stockRtInfoMapper.getStockScreenDKLine(startDate,endDate,curTimes,code);
+        return R.ok(info);
     }
 }

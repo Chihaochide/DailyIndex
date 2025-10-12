@@ -1,8 +1,6 @@
 package com.ax.stock.controller;
 
-import com.ax.stock.pojo.domain.InnerMarketDomain;
-import com.ax.stock.pojo.domain.StockBlockDomain;
-import com.ax.stock.pojo.domain.StockUpdownDomain;
+import com.ax.stock.pojo.domain.*;
 import com.ax.stock.service.StockService;
 import com.ax.stock.pojo.vo.resp.R;
 import com.ax.stock.vo.resp.PageResult;
@@ -46,8 +44,6 @@ public class StockController {
 
     /**
      * 获取涨幅榜
-     *
-     *
      */
     // @RequestParam(value = "page",required = false,defaultValue = "1"
     // required：是否必填  defaultValue：默认值
@@ -55,7 +51,7 @@ public class StockController {
             @ApiImplicitParam(paramType = "query", dataType = "int", name = "page", value = ""),
             @ApiImplicitParam(paramType = "query", dataType = "int", name = "pageSize", value = "")
     })
-    @ApiOperation(value = "required：是否必填  defaultValue：默认值", notes = "required：是否必填  defaultValue：默认值", httpMethod = "GET")
+    @ApiOperation(value = "获取涨幅榜", notes = "获取涨幅榜", httpMethod = "GET")
     @GetMapping("/stock/all")
     public R<PageResult<StockUpdownDomain>> getStockInfoByPage(@RequestParam(value = "page",required = false,defaultValue = "1") int page,
                                                                    @RequestParam(value = "pageSize",required = false,defaultValue = "20") int pageSize){
@@ -112,9 +108,35 @@ public class StockController {
     /**
      * 统计最新交易时间点（A股）个股分时涨幅度
      */
+    @ApiOperation(value = "统计最新交易时间点（A股）个股分时涨幅度", notes = "统计最新交易时间点（A股）个股分时涨幅度", httpMethod = "GET")
     @GetMapping("/stock/updown")
     public R<Map<String,Object>> getIncreaseRangeInfo(){
         return stockService.getIncreaseRangeInfo();
     }
 
+    /**
+     * 获取指定股票T日的分时数据
+     */
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "string", name = "code", value = "股票编码", required = true)
+    })
+    @ApiOperation(value = "获取指定股票T日的分时数据", notes = "获取指定股票T日的分时数据", httpMethod = "GET")
+    @GetMapping("/stock/screen/time-sharing")
+    public R<List<Stock4MinuteDomain>> getStockScreenTimeSharing(@RequestParam(value = "code",required = true) String code){
+        return stockService.getStockScreenTimeSharing(code);
+    }
+
+    /**
+     * 统计股票日K线数据
+     * @param code 股票编码
+     * @return
+     */
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", dataType = "string", name = "code", value = "股票编码", required = true)
+    })
+    @ApiOperation(value = "统计股票日K线数据", notes = "统计股票日K线数据", httpMethod = "GET")
+    @GetMapping("/stock/screen/dkline")
+    public R<List<Stock4EvrDayDomain>> getStockScreenDKLine(@RequestParam(value = "code",required = true) String code){
+        return stockService.getStockScreenDKLine(code);
+    }
 }

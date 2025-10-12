@@ -1,8 +1,6 @@
 package com.ax.stock.service;
 
-import com.ax.stock.pojo.domain.InnerMarketDomain;
-import com.ax.stock.pojo.domain.StockBlockDomain;
-import com.ax.stock.pojo.domain.StockUpdownDomain;
+import com.ax.stock.pojo.domain.*;
 import com.ax.stock.pojo.vo.resp.R;
 import com.ax.stock.vo.resp.PageResult;
 
@@ -29,4 +27,7 @@ public interface StockService {
 
     R<Map<String, Object>> getIncreaseRangeInfo();
 
+    R<List<Stock4MinuteDomain>> getStockScreenTimeSharing(String code);
+
+    R<List<Stock4EvrDayDomain>> getStockScreenDKLine(String code);
 }

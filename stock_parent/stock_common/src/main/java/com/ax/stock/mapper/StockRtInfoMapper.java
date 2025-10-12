@@ -1,5 +1,7 @@
 package com.ax.stock.mapper;
 
+import com.ax.stock.pojo.domain.Stock4EvrDayDomain;
+import com.ax.stock.pojo.domain.Stock4MinuteDomain;
 import com.ax.stock.pojo.domain.StockUpdownDomain;
 import com.ax.stock.pojo.entity.StockRtInfo;
 import org.apache.ibatis.annotations.Param;
@@ -46,4 +48,32 @@ public interface StockRtInfoMapper {
      * @return
      */
     List<Map<String, Object>> getIncreaseRangeInfoByDate(@Param("curDate") Date curDate);
+
+    /**
+     * 根据股票编码查询当前指定时间范围内的分时数据
+     * @param openDate 开盘时间
+     * @param endDate 截止时间
+     * @param code 股票编码
+     * @return
+     */
+    List<Stock4MinuteDomain> getStock4MinuteInfo(@Param("openDate") Date openDate, @Param("endDate") Date endDate, @Param("code") String code);
+
+    /**
+     *
+     * @param startDate 起始时间
+     * @param endDate 截止时间
+     * @param code 股票编码
+     * @return
+     */
+    List<Stock4EvrDayDomain> getStockScreenDKLine(@Param("startDate") Date startDate, @Param("endDate") Date endDate,
+                                                  @Param("curTimes") List<String> curTimes,@Param("code") String code);
+
+    /**
+     *
+     * @param startDate 起始时间
+     * @param endDate 截止时间
+     * @param code 股票编码
+     * @return
+     */
+    List<String> getLastCurTimes(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("code") String code);
 }
