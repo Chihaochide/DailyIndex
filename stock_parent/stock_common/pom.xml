@@ -150,11 +150,14 @@
             <artifactId>hutool-captcha</artifactId>
             <version>5.0.1</version>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>5.2.12.RELEASE</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+
+
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
@@ -191,5 +194,7 @@
             <artifactId>easyexcel</artifactId>
             <version>3.0.4</version>
         </dependency>
+
+
     </dependencies>
 </project>
