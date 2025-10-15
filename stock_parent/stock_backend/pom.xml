@@ -27,11 +27,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>2.2.5.RELEASE</version>
-        </dependency>
+
 <!--        引入单元测试场景依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -31,6 +31,19 @@ public class StockInfoConfig {
      */
     @ApiModelProperty("股票涨幅区间标题集合")
     private List<String> upDownRange;
+
+    /**
+     * 大盘 外盘 个股的公共url
+     */
+    @ApiModelProperty("大盘 外盘 个股的公共url")
+    private String marketUrl;
+
+    /**
+     * 板块采集的url地址
+     */
+    @ApiModelProperty("板块采集的url地址")
+    private String blockUrl;
 }
+
 
 
