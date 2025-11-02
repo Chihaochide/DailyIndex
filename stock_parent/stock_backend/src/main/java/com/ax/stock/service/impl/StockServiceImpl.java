@@ -13,6 +13,7 @@ import com.ax.stock.pojo.vo.resp.R;
 import com.ax.stock.util.DateTimeUtil;
 import com.ax.stock.vo.resp.PageResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -41,23 +42,37 @@ public class StockServiceImpl implements StockService {
     private StockBlockRtInfoMapper stockBlockRtInfoMapper;
     @Autowired
     private StockRtInfoMapper stockRtInfoMapper;
+    /**
+     * 注入本地缓存bean
+     */
+    @Autowired
+    private Cache<String,Object> caffeineCache;
     @Override
     public R<List<InnerMarketDomain>> getInnerMarketInfo() {
-        // 1.获取股票的最新最新的交易时间点（精确到分钟，秒和毫秒设置为0）
+
+        // 默认本地缓存加载数据，如果不存在 则从数据库加载并同步到本地缓存
+        // 在开盘期间内，本地缓存默认1分钟
+        R<List<InnerMarketDomain>> result = (R<List<InnerMarketDomain>>) caffeineCache.get("innerMarketKey", key->{
+
+            // 1.获取股票的最新最新的交易时间点（精确到分钟，秒和毫秒设置为0）
 //        DateTime curDateTime = DateTimeUtil.getLastDate4Stock(DateTime.now());
 //        Date curDate = DateTimeUtil.getLastDate4Stock(DateTime.now()).toDate();
 //        Date curDate = curDateTime.toDate();
-        // 先使用mock数据，等后续工程完成后再将代码删除即可
-        Date curDate = DateTime.parse("2021-12-28 09:31:00",
-                        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
-        // 2.获取大盘集合
-        List<String> innerCodes = stockInfoConfig.getInner();
-        System.out.println("innerCodes = " + innerCodes);
-        // 3.调用mapper查询数据
-        List<InnerMarketDomain> data = stockMarketIndexInfoMapper.getMarketInfo(curDate,innerCodes);
-        System.out.println("data = " + data);
-        // 4.封装并响应
-        return R.ok(data);
+            // 先使用mock数据，等后续工程完成后再将代码删除即可
+            Date curDate = DateTime.parse("2021-12-28 09:31:00",
+                    DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")).toDate();
+            // 2.获取大盘集合
+            List<String> innerCodes = stockInfoConfig.getInner();
+            System.out.println("innerCodes = " + innerCodes);
+            // 3.调用mapper查询数据
+            List<InnerMarketDomain> data = stockMarketIndexInfoMapper.getMarketInfo(curDate,innerCodes);
+            System.out.println("data = " + data);
+            // 4.封装并响应
+            return R.ok(data);
+        });
+        return result;
+
+
     }
 
     @Override

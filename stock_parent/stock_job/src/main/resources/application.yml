@@ -20,7 +20,7 @@ spring:
       # 并发效率会有所下降，如果需要可以通过配置 useUnfairLock 属性为 true 使用非公平锁。
       maxWait: 60000
   profiles:
-    active: redis,stock # 激活其它配置文件，如果存在多个文件以 逗号进行间隔
+    active: redis,stock,mq,xxljob # 激活其它配置文件，如果存在多个文件以 逗号进行间隔
 # 配置mybatis
 mybatis:
   mapper-locations: classpath:mapper/*.xml # 配置加载mapper的资源

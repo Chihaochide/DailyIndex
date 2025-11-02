@@ -76,4 +76,11 @@ public interface StockRtInfoMapper {
      * @return
      */
     List<String> getLastCurTimes(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("code") String code);
+
+    /**
+     * 批量插入个股数据
+     * @param entities
+     * @return
+     */
+    int insertBatch(@Param("entities") List<StockRtInfo> entities);
 }

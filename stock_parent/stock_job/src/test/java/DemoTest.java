@@ -16,4 +16,10 @@ public class DemoTest {
         stockTimerTaskService.getInnerMarketInfo();
     }
 
+    @Test
+    public void getStockRtIndex() throws Exception{
+        stockTimerTaskService.getStockRtIndex();
+        Thread.sleep(50000);
+    }
+
 }
